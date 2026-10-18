@@ -1,0 +1,181 @@
+/* ---------------------------------------------- MODAL --------------------------------------------------- */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* fundo escuro transparente */
+    z-index: 1000;
+
+    /* Esconde por padrão */
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+}
+
+/* Painel deslizante vindo da direita */
+.drawer-panel {
+    position: absolute;
+    top: 0;
+    right: 0; /* Alinhado à direita */
+    width: 100%;
+    max-width: 400px; /* Largura do modal */
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.15);
+    padding: 10px 25px 10px 10px;
+    /* padding: 24px 24px 0 10px; */
+    box-sizing: border-box;
+    z-index: 999;
+
+    /* Animação de slide: começa escondido à direita fora da tela */
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ESTADO ATIVO (Quando abre o modal) */
+.modal-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-overlay.open .drawer-panel {
+    /* Traz o painel para a tela */
+    transform: translateX(0);
+}
+
+/* Estilos básicos de formulário e botões */
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+
+    h2 {
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin: 0;
+    }
+
+    button {
+        background-color: transparent;
+        color: #222;
+        border: none;
+        font-size: 2rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* ---------------------------------------------- MODAL --------------------------------------------------- */
+
+.drawer-body {
+    a {
+        color: #4699e2; /* Cor azul fixa para os links */
+        text-decoration: none; /* Remove o sublinhado */
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        word-wrap: break-word;
+    }
+
+    /* Campos de texto e inputs padrão */
+    .input-field,
+    input[type="text"],
+    input[type="number"] {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        color: #333;
+        background-color: #fff;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #666;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Linha que agrupa o motivo (datalist) e o valor lado a lado */
+    .form-comprovante-dados {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+    }
+
+    /* O input do motivo ocupa mais espaço */
+    .form-comprovante-dados input[type="text"] {
+        flex: 1;
+    }
+
+    /* O input de valor fica com uma largura fixa harmoniosa */
+    .form-comprovante-dados input[type="number"] {
+        width: 130px;
+        flex-shrink: 0;
+    }
+
+    /* Botão de submissão estilizado combinando com o minimalismo */
+    button[type="submit"] {
+        background-color: #222;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: background-color 0.2s ease;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #444;
+    }
+
+    button {
+        background-color: #4699e2;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: background-color 0.2s ease;
+    }
+}

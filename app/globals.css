@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000;
 }
 
 @theme inline {
@@ -14,8 +14,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #fff;
+    --foreground: #000;
   }
 }
 
@@ -23,4 +23,246 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.listagem-mes-ano-header {
+  display: flex;
+  position: sticky;
+  top: 0;
+  height: auto;
+  padding: 10px 0;
+  border-bottom: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--background);
+  z-index: 10;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  select,
+  label {
+    padding: 5px;
+    margin: 5px;
+    text-transform: capitalize;
+  }
+
+  select {
+    width: 100px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+  }
+
+  .listagem-mes-ano-item {
+    margin: 0 10px;
+    display: flex;
+  }
+}
+
+.generico-centralizado {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  height: 200px;
+  width: 100%;
+  font-weight: bold;
+  color: #555;
+}
+
+.comprovante-lista {
+  width: 95%;
+  max-width: 900px;
+  margin: 0 auto 100px; /* Centraliza o bloco na tela */
+  padding: 20px 0;
+}
+
+.grupo-comprovantes {
+  background: #fff;
+  /* border: 2px solid rgba(238, 238, 238, 0.4); */
+  border-radius: 8px;
+  /* Garante que o grid tenha 2 colunas fixas e proporcionais */
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  align-items: stretch; /* Alinha a altura das colunas */
+  margin-bottom: 12px;
+  overflow: hidden; /* Mantém tudo dentro do borderRadius */
+  transition: all 0.5s ease-in-out; /* Transição suave para o hover */
+}
+
+.grupo-comprovantes:hover,
+.grupo-comprovantes:focus-within,
+.grupo-comprovantes:active {
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); */
+  /* border: 2px solid #000; */
+}
+
+.data-header {
+  font-size: 2rem;
+  font-weight: bold;
+  /* border-right: 1px solid #eee; */
+  /* min-height: 90px; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: default;
+  user-select: none; /* Evita seleção de texto */
+  /* background-color: #fafafa; */
+}
+
+.lista-itens {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  align-items: center;
+  justify-content: center;
+  border-left: 2px solid #ccc;
+  padding: 10px 0px 10px 10px;
+  border-radius: 15px;
+  gap: 2px;
+}
+
+.acoes-comprovante {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+
+  /* border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 2px;
+  cursor: pointer;
+  transition: all 0.5s ease-in-out; */
+
+  button {
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 2px;
+    cursor: pointer;
+    transition: all 0.5s ease-in-out;
+  }
+
+  button:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* .acoes-comprovante:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+} */
+
+.remove {
+  color: #f44a4a;
+  font-size: 0.85rem;
+}
+
+.change {
+  color: #3aa71c;
+  font-size: 0.85rem;
+}
+
+.view {
+  color: #4699e2;
+  font-size: 0.85rem;
+}
+
+.comprovante-item {
+  display: grid;
+  border-radius: 8px;
+  grid-template-columns: 40px minmax(120px, 1fr) 75px 60px;
+  gap: 10px;
+  padding: 5px;
+  align-items: center;
+  width: 100%;
+}
+
+.comprovante-caixa {
+  border-left: 2px solid #4699e2;
+  background-color: #eaf4ff;
+}
+.comprovante-banestes {
+  border-left: 2px solid #3aa71c;
+  background-color: #eaf4ea;
+}
+
+.comprovante-bradesco {
+  border-left: 2px solid #f44a4a;
+  background-color: #ffeaea;
+}
+
+.comprovante-item span:nth-child(2) {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comprovante-item span:nth-child(3) {
+  /* font-family: monospace; */
+  font-weight: bold;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.comprovante-item button {
+  /* text-align: center; */
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.container-flutuante {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Alinha os elementos à direita */
+  gap: 10px; /* Espaço entre os elementos */
+  z-index: 999; /* Garante que fique acima de outros elementos */
+
+  transition: all 500ms ease-in-out; /* Transição suave para qualquer mudança */
+
+  /* Estilos individuais de cada caixa (SEM position fixed/bottom/right) */
+  .total-flutuante {
+    border: 1px solid #ccc;
+    background-color: rgba(255, 255, 255, 0.8); /* Ajustado para melhor leitura */
+    backdrop-filter: blur(10px);
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 0px 5px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    cursor: default;
+    user-select: none; /* Evita seleção de texto */
+  }
+
+  .adicionar-comprovante {
+    /* Tamanho fixo do botão */
+    width: 44px;
+    height: 44px;
+
+    /* Centraliza o ícone/texto "+" no meio do botão */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Mantém o restante dos seus estilos */
+    border: 1px solid #ccc;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 8px; /* Ou 50% se quiser ele redondinho */
+    box-shadow: 0 0px 5px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 200ms ease-in-out; /* Transição suave para hover */
+  }
+
+  .adicionar-comprovante:hover {
+    box-shadow: 0 0px 10px rgba(0, 0, 0, 0); /* Aumenta o brilho do botão ao passar o mouse */
+  }
 }
