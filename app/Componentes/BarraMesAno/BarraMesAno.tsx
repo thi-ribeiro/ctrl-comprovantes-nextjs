@@ -7,14 +7,15 @@ const BarraMesAno = () => {
     mesAno,
     fetchDataMesesAnos,
     fetchDataComprovantes,
-    mesSelecionado,
-    selecionarMes,
+    selecionarAnoMes,
+    anoMesSelecionado,
   } = useComprovantes();
 
   const [anoEscolha, setAnoEscolha] = useState<string>("");
 
   useEffect(() => {
     fetchDataMesesAnos();
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const mesesDoAnoAtual =
@@ -22,7 +23,7 @@ const BarraMesAno = () => {
 
   // Mês ativo derivado (contexto ou o último do ano atual como fallback)
   const mesAtivo =
-    mesSelecionado ||
+    anoMesSelecionado.mes ||
     (mesesDoAnoAtual.length > 0
       ? mesesDoAnoAtual[mesesDoAnoAtual.length - 1].num.toString()
       : "");
@@ -32,13 +33,14 @@ const BarraMesAno = () => {
   };
 
   const handleMesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    selecionarMes(event.target.value);
+    selecionarAnoMes(anoMesSelecionado.ano, event.target.value);
+    //VERIFICAR DEPOIIS!
   };
 
   const handleBuscarClick = () => {
     if (!anoEscolha || !mesAtivo) return;
     fetchDataComprovantes(anoEscolha, mesAtivo);
-    selecionarMes(mesAtivo);
+    selecionarAnoMes(anoEscolha, mesAtivo ?? anoMesSelecionado.mes);
   };
 
   if (!mesAno)

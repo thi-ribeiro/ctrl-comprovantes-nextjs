@@ -279,7 +279,7 @@ body {
 
 .MesSelecionado-flutuante {
   position: fixed;
-  top: 100px;
+  bottom: 20px;
   left: 20px;
   display: flex;
   flex-direction: row;
@@ -289,16 +289,17 @@ body {
 
   z-index: 999;
 
-  padding: 10px;
-
-  transition: all 500ms ease-in-out;
+  padding: 10px 20px;
   border: 1px solid #ccc;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.8); /* Ajustado para melhor leitura */
   backdrop-filter: blur(10px);
-  border-radius: 8px; /* Ou 50% se quiser ele redondinho */
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 0px 5px rgba(0, 0, 0, 0.3);
   font-weight: bold;
+  cursor: default;
+  user-select: none; /* Evita seleção de texto */
   font-size: x-large;
-  box-shadow: 0 0px 10px rgba(0, 0, 0, 0.2);
 }
 
 .MesSelecionado-flutuante {

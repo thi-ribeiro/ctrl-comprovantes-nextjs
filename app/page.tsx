@@ -7,7 +7,6 @@ import BarraMesAno from "./Componentes/BarraMesAno/BarraMesAno";
 import TotalFlutuante from "./Componentes/TotalFlutuante/TotalFlutuante";
 import { useComprovantes } from "./Contexto/ComprovanteContext";
 import AdicionarComprovante from "./Componentes/AdicionarComprovante/AdicionarComprovante";
-import { MesSelecionadoFlutuante } from "./Componentes/MesSelecionadoFlutuante/MesSelecionadoFlutuante";
 
 export default function Home() {
   const { dadosAgrupados } = useComprovantes();
@@ -15,8 +14,6 @@ export default function Home() {
   return (
     <React.Fragment>
       <BarraMesAno />
-
-      <MesSelecionadoFlutuante />
 
       <ListaComprovantes comprovantes={dadosAgrupados} />
 

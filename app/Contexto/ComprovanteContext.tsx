@@ -20,8 +20,9 @@ interface ComprovantesContextType {
   ) => Promise<void>; // Função para apagar um comprovante
   separaMesAno: (data: string) => { ano: string; mes: string }; // Função para separar ano e mês de uma data
   mesAnoAtual: () => { ano: string; mes: string }; // Função para obter o mês e ano atual
-  mesSelecionado: string;
-  selecionarMes: (novoMes: string) => void;
+  anoMesSelecionado: { ano: string; mes: string };
+  anoMesCarregado: { ano: string; mes: string };
+  selecionarAnoMes: (novoAno: string, novoMes: string) => void;
   nomeDoMes: (mes: string) => string;
 }
 
@@ -38,7 +39,12 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
   const [loadingComprovantes, setloadingComprovantes] = useState(false);
   const [loadingMesesAnos, setloadingMesesAnos] = useState(false);
   const [mesAno, setmesAno] = useState<EstruturaMesAno | null>(null);
-  const [mesSelecionado, setMesSelecionado] = useState<string>("");
+  const [anoMesSelecionado, setanoMesSelecionado] = useState({
+    ano: "",
+    mes: "",
+  });
+
+  const [anoMesCarregado, setAnoMesCarregado] = useState({ ano: "", mes: "" });
 
   const nomeDoMes = (mes: string) => {
     const data = new Date(2000, Number(mes) - 1, 15);
@@ -61,12 +67,10 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
   const { ano: anoAtual, mes: mesAtual } = mesAnoAtual();
 
   const fetchDataComprovantes = async (
-    ano: string | number = anoAtual,
-    mes: string | number = mesAtual,
+    ano: string = anoAtual,
+    mes: string = mesAtual,
   ) => {
     setloadingComprovantes(true);
-
-    console.log("Fetch do contexto:");
 
     try {
       const response = await fetch(
@@ -74,6 +78,7 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
       );
       const data = await response.json();
       setdadosBrutos(data.dados);
+      setAnoMesCarregado({ ano, mes });
 
       //console.log("Dados recebidos:", data.dados);
     } catch (error) {
@@ -188,8 +193,8 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
           : null;
 
       if (ultimoMesDisponivel) {
-        selecionarMes(ultimoMesDisponivel.toString());
-        await fetchDataComprovantes(ano, ultimoMesDisponivel);
+        selecionarAnoMes(ano, ultimoMesDisponivel.toString());
+        await fetchDataComprovantes(ano, ultimoMesDisponivel.toString());
       } else {
         console.log("O ano ficou sem meses cadastrados.");
       }
@@ -199,8 +204,8 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
     }
   };
 
-  const selecionarMes = (novoMes: string) => {
-    setMesSelecionado(novoMes);
+  const selecionarAnoMes = (novoAno: string, novoMes: string) => {
+    setanoMesSelecionado({ ano: novoAno, mes: novoMes });
     // Se quiser colocar algo extra aqui no futuro (ex: log, validação, fetch), já fica centralizado
   };
 
@@ -216,9 +221,10 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
     separaMesAno,
     mesAno,
     mesAnoAtual,
-    mesSelecionado,
-    selecionarMes,
+    anoMesSelecionado,
+    selecionarAnoMes,
     nomeDoMes,
+    anoMesCarregado
   };
 
   return (

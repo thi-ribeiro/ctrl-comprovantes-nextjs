@@ -3,7 +3,6 @@ import ModalDrawer from "../ModalDrawer/ModalDrawer";
 import { useComprovantes } from "@/app/Contexto/ComprovanteContext";
 import { Comprovante2 } from "../../types";
 import { uploadFiles } from "@/app/utils/uploadthing";
-import { CgSoftwareDownload } from "react-icons/cg";
 
 interface EditarComprovanteProps {
   itemSelecionado: Comprovante2 | null;
@@ -37,79 +36,48 @@ export default function EditarComprovante({
     return () => clearTimeout(timer);
   };
 
-  const handleEditarSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEditarSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+    id: string | number,
+  ) => {
     e.preventDefault();
-    const formElement = e.currentTarget;
-    const formData = new FormData(formElement);
+    if (isSubmitting) return;
 
-    const dataComprovanteStr = formData.get("dataComprovante") as string;
-    const usuarioComprovante = formData.get("usuarioComprovante") as string;
-    const cartaoComprovante = formData.get("cartaoComprovante") as string;
-    const motivoComprovante = formData.get("motivoComprovante") as string;
-    const valorComprovante = formData.get("valorComprovante") as string;
-    const file = formData.get("arquivoComprovante") as File | null;
+    const formData = new FormData(e.currentTarget);
+    const dataComprovante = formData.get("dataComprovante") as string;
 
     setIsSubmitting(true);
-    let linkComprovante = itemSelecionado?.linkComprovante || "";
-
     try {
-      // Se o utilizador seleccionou um novo arquivo, faz o upload para o Uploadthing primeiro
-      if (file && file.size > 0) {
-        setLoadingText("Enviando arquivo...");
-        const uploadRes = await uploadFiles("comprovanteUploader", {
-          files: [file],
-        });
-
-        if (!uploadRes || uploadRes.length === 0) {
-          throw new Error("Falha ao fazer upload do novo arquivo.");
-        }
-
-        linkComprovante = uploadRes[0].ufsUrl || uploadRes[0].url;
-      }
-
-      setLoadingText("Salvando alterações...");
-      const response = await fetch(
-        `/Routes/Comprovantes/AdicionarComprovante/`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            data: {
-              idComprovante: itemSelecionado?.idComprovante,
-              dataComprovante: dataComprovanteStr,
-              usuarioComprovante,
-              cartaoComprovante,
-              motivoComprovante,
-              valorComprovante,
-              linkComprovante, // Envia o novo link ou mantém o antigo caso não tenha trocado
-            },
-          }),
-          headers: {
-            "Content-Type": "application/json",
+      const response = await fetch(`/Routes/Comprovantes/EditarComprovante/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: {
+            idComprovante: id,
+            dataComprovante,
+            usuarioComprovante: formData.get("usuarioComprovante"),
+            cartaoComprovante: formData.get("cartaoComprovante"),
+            motivoComprovante: formData.get("motivoComprovante"),
+            valorComprovante: formData.get("valorComprovante"),
           },
-        },
-      );
+        }),
+      });
 
       const result = await response.json();
-
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(result.erro || "Erro ao editar comprovante.");
-      }
 
-      if (dataComprovanteStr) {
-        const dataMes = new Date(dataComprovanteStr);
-        const ano = dataMes.getFullYear().toString();
-        const mes = (dataMes.getMonth() + 1).toString().padStart(2, "0");
-
+      if (dataComprovante) {
+        const [ano, mes] = dataComprovante.split("-");
         fetchDataComprovantes(ano, mes);
       }
 
       handleFecharAnimado();
     } catch (error) {
       console.error("Erro ao editar comprovante:", error);
-      alert((error as Error).message || "Falha ao actualizar comprovante.");
+      alert((error as Error).message || "Falha ao atualizar comprovante.");
     } finally {
       setIsSubmitting(false);
-      setLoadingText("Editar");
     }
   };
 
@@ -123,7 +91,10 @@ export default function EditarComprovante({
       onClose={handleFecharAnimado}
       titulo="Editar Comprovante"
     >
-      <form key={itemSelecionado.idComprovante} onSubmit={handleEditarSubmit}>
+      <form
+        key={itemSelecionado.idComprovante}
+        onSubmit={(e) => handleEditarSubmit(e, itemSelecionado.idComprovante)}
+      >
         <input
           type="date"
           name="dataComprovante"
@@ -198,14 +169,7 @@ export default function EditarComprovante({
           )}
           required
         />
-
-        <input
-          type="file"
-          name="arquivoComprovante"
-          accept=".pdf,.jpg,.jpeg,.png"
-          // O arquivo na edição é opcional (se não escolher nenhum, mantém o atual)
-        />
-
+        
         <div className="edit-link-comprovante">
           <h1>Link atual: </h1>
           <a

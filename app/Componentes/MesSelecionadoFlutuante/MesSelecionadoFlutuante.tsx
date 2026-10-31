@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useComprovantes } from "@/app/Contexto/ComprovanteContext";
 
 export const MesSelecionadoFlutuante = () => {
-  const { mesSelecionado, nomeDoMes, loadingComprovantes } = useComprovantes();
+  const { nomeDoMes, loadingComprovantes, anoMesCarregado } = useComprovantes();
   const [ativo, setAtivo] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
@@ -45,11 +45,11 @@ export const MesSelecionadoFlutuante = () => {
     };
   }, []);
 
-  if (!mesSelecionado || loadingComprovantes) return null;
+  if (!anoMesCarregado.mes || loadingComprovantes) return null;
 
   return (
     <div className={`MesSelecionado-flutuante ${ativo ? "transparente" : ""}`}>
-      {nomeDoMes(mesSelecionado)}
+      {nomeDoMes(anoMesCarregado.mes)}
     </div>
   );
 };

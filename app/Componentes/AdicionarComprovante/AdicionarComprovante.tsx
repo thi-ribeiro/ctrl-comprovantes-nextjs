@@ -15,7 +15,7 @@ export default function AdicionarComprovante({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingText, setLoadingText] = useState("Adicionar");
 
-  const { fetchDataComprovantes, fetchDataMesesAnos, selecionarMes } =
+  const { fetchDataComprovantes, fetchDataMesesAnos, selecionarAnoMes } =
     useComprovantes();
 
   const handleAdicionarSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -111,7 +111,7 @@ export default function AdicionarComprovante({
         const [ano, mes] = dataComprovanteStr.split("-");
 
         await fetchDataMesesAnos();
-        await selecionarMes(mes);
+        await selecionarAnoMes(ano, mes);
         await fetchDataComprovantes(ano, mes);
       }
 

@@ -3,6 +3,7 @@ import { useComprovantes } from "@/app/Contexto/ComprovanteContext";
 import EditarComprovante from "../EditarComprovante/EditarComprovante";
 import React, { useState } from "react";
 import { LuArrowLeftRight, LuMinus } from "react-icons/lu";
+import { MesSelecionadoFlutuante } from "../MesSelecionadoFlutuante/MesSelecionadoFlutuante";
 
 interface Props {
   comprovantes: Record<string, Comprovante2[]>;
@@ -14,7 +15,7 @@ const ListaComprovantes = ({ comprovantes }: Props) => {
     apagarComprovante,
     mesAno,
     nomeDoMes,
-    mesSelecionado,
+    anoMesSelecionado,
   } = useComprovantes();
 
   const [dadosComprovante, setDadosComprovante] = useState<Comprovante2 | null>(
@@ -33,7 +34,6 @@ const ListaComprovantes = ({ comprovantes }: Props) => {
     );
   }
 
-
   if (!grupos.length || !mesAno) {
     return (
       <div className="generico-centralizado">
@@ -43,7 +43,8 @@ const ListaComprovantes = ({ comprovantes }: Props) => {
   } else if (!grupos.length) {
     return (
       <div className="generico-centralizado">
-        Nenhum comprovante encontrado para o mês de {nomeDoMes(mesSelecionado)}.
+        Nenhum comprovante encontrado para o mês de{" "}
+        {nomeDoMes(anoMesSelecionado.mes)}.
       </div>
     );
   }
@@ -66,68 +67,71 @@ const ListaComprovantes = ({ comprovantes }: Props) => {
   };
 
   return (
-    <div className="comprovante-lista">
-      {grupos.map(([data, itens]) => (
-        <div key={data} className="grupo-comprovantes">
-          <div className="data-header">{data}</div>
+    <>
+      <MesSelecionadoFlutuante />
+      <div className="comprovante-lista">
+        {grupos.map(([data, itens]) => (
+          <div key={data} className="grupo-comprovantes">
+            <div className="data-header">{data}</div>
 
-          <div className="lista-itens">
-            {itens.map((item) => (
-              <div
-                key={item.idComprovante}
-                className={`comprovante-item ${checkBancoComprovante(item)}`}
-              >
-                <span>{item.usuarioComprovante}</span>
-                <span>{item.motivoComprovante}</span>
-                <span>
-                  {Number(item.valorComprovante).toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
-                </span>
+            <div className="lista-itens">
+              {itens.map((item) => (
+                <div
+                  key={item.idComprovante}
+                  className={`comprovante-item ${checkBancoComprovante(item)}`}
+                >
+                  <span>{item.usuarioComprovante}</span>
+                  <span>{item.motivoComprovante}</span>
+                  <span>
+                    {Number(item.valorComprovante).toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </span>
 
-                <div className="acoes-comprovante">
-                  <button
-                    className="editar"
-                    onClick={() =>
-                      setDadosComprovante({
-                        ...item,
-                      })
-                    }
-                  >
-                    <LuArrowLeftRight className="change" size={18} />
-                  </button>
+                  <div className="acoes-comprovante">
+                    <button
+                      className="editar"
+                      onClick={() =>
+                        setDadosComprovante({
+                          ...item,
+                        })
+                      }
+                    >
+                      <LuArrowLeftRight className="change" size={18} />
+                    </button>
 
-                  <button
-                    onClick={() =>
-                      apagarComprovante(
-                        item.idComprovante,
-                        item.data,
-                        item.nomeArquivo,
-                      )
-                    }
-                  >
-                    <LuMinus className="remove" size={18} />
-                  </button>
+                    <button
+                      onClick={() =>
+                        apagarComprovante(
+                          item.idComprovante,
+                          item.data,
+                          item.nomeArquivo,
+                        )
+                      }
+                    >
+                      <LuMinus className="remove" size={18} />
+                    </button>
+                  </div>
                 </div>
+              ))}
+              <div className="total-dia">
+                Total do dia:{" "}
+                {valorTotalDoDia(itens).toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
               </div>
-            ))}
-            <div className="total-dia">
-              Total do dia:{" "}
-              {valorTotalDoDia(itens).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
             </div>
           </div>
-        </div>
-      ))}
+        ))}
 
-      <EditarComprovante
-        itemSelecionado={dadosComprovante}
-        onClose={() => setDadosComprovante(null)}
-      />
-    </div>
+        <EditarComprovante
+          itemSelecionado={dadosComprovante}
+          onClose={() => setDadosComprovante(null)}
+        />
+      </div>
+    </>
   );
 };
 export default ListaComprovantes;
