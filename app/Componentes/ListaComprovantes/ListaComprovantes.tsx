@@ -1,16 +1,21 @@
 import { Comprovante2 } from "../../types";
 import { useComprovantes } from "@/app/Contexto/ComprovanteContext";
-
-import { CgArrowsExchange, CgMathMinus } from "react-icons/cg";
 import EditarComprovante from "../EditarComprovante/EditarComprovante";
 import React, { useState } from "react";
+import { LuArrowLeftRight, LuMinus } from "react-icons/lu";
 
 interface Props {
   comprovantes: Record<string, Comprovante2[]>;
 }
 
 const ListaComprovantes = ({ comprovantes }: Props) => {
-  const { loadingComprovantes, apagarComprovante } = useComprovantes();
+  const {
+    loadingComprovantes,
+    apagarComprovante,
+    mesAno,
+    nomeDoMes,
+    mesSelecionado,
+  } = useComprovantes();
 
   const [dadosComprovante, setDadosComprovante] = useState<Comprovante2 | null>(
     null,
@@ -28,10 +33,17 @@ const ListaComprovantes = ({ comprovantes }: Props) => {
     );
   }
 
-  if (grupos.length === 0) {
+
+  if (!grupos.length || !mesAno) {
     return (
       <div className="generico-centralizado">
-        Nenhum comprovante encontrado para o mês selecionado.
+        Selecione o ano e o mês para exibir os comprovantes.
+      </div>
+    );
+  } else if (!grupos.length) {
+    return (
+      <div className="generico-centralizado">
+        Nenhum comprovante encontrado para o mês de {nomeDoMes(mesSelecionado)}.
       </div>
     );
   }
@@ -47,6 +59,10 @@ const ListaComprovantes = ({ comprovantes }: Props) => {
       return "comprovante-bradesco";
     }
     return "";
+  };
+
+  const valorTotalDoDia = (itens: Comprovante2[]) => {
+    return itens.reduce((total, item) => total + item.valorComprovante, 0);
   };
 
   return (
@@ -79,19 +95,30 @@ const ListaComprovantes = ({ comprovantes }: Props) => {
                       })
                     }
                   >
-                    <CgArrowsExchange className="change" size={20} />
+                    <LuArrowLeftRight className="change" size={18} />
                   </button>
 
                   <button
                     onClick={() =>
-                      apagarComprovante(item.idComprovante, item.data)
+                      apagarComprovante(
+                        item.idComprovante,
+                        item.data,
+                        item.nomeArquivo,
+                      )
                     }
                   >
-                    <CgMathMinus className="remove" size={20} />
+                    <LuMinus className="remove" size={18} />
                   </button>
                 </div>
               </div>
             ))}
+            <div className="total-dia">
+              Total do dia:{" "}
+              {valorTotalDoDia(itens).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </div>
           </div>
         </div>
       ))}

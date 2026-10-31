@@ -1,4 +1,4 @@
-"use client"; // Esta linha é crucial para que o Next.js saiba que é um Client Component
+"use client";
 
 import { createContext, useContext, useState, ReactNode, useMemo } from "react";
 import { Comprovante2, EstruturaMesAno } from "../types";
@@ -8,13 +8,21 @@ interface ComprovantesContextType {
   loadingComprovantes: boolean;
   loadingMesesAnos: boolean;
   dadosAgrupados: Record<string, Comprovante2[]>; // Aqui você pode definir o tipo correto para os dados agrupados
-  fetchDataComprovantes: (ano: string, mes: string) => Promise<void>;
+  fetchDataComprovantes: (ano?: string, mes?: string) => Promise<void>;
   fetchDataMesesAnos: () => Promise<void>;
   mesAno: EstruturaMesAno | null; // Aqui você pode definir o tipo correto para a estrutura de meses e anos
   totalDatas: number; // Aqui você pode definir o tipo correto para o total
   formatarMoeda: (valor: number) => string; // Função para formatar valores monetários
-  apagarComprovante: (id: number, data: string) => Promise<void>; // Função para apagar um comprovante
+  apagarComprovante: (
+    id: number,
+    data: string,
+    nomeArquivo: string,
+  ) => Promise<void>; // Função para apagar um comprovante
   separaMesAno: (data: string) => { ano: string; mes: string }; // Função para separar ano e mês de uma data
+  mesAnoAtual: () => { ano: string; mes: string }; // Função para obter o mês e ano atual
+  mesSelecionado: string;
+  selecionarMes: (novoMes: string) => void;
+  nomeDoMes: (mes: string) => string;
 }
 
 const ComprovantesContext = createContext<ComprovantesContextType | undefined>(
@@ -30,22 +38,44 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
   const [loadingComprovantes, setloadingComprovantes] = useState(false);
   const [loadingMesesAnos, setloadingMesesAnos] = useState(false);
   const [mesAno, setmesAno] = useState<EstruturaMesAno | null>(null);
+  const [mesSelecionado, setMesSelecionado] = useState<string>("");
+
+  const nomeDoMes = (mes: string) => {
+    const data = new Date(2000, Number(mes) - 1, 15);
+    const nome = data.toLocaleDateString("pt-BR", { month: "long" });
+    return nome.charAt(0).toUpperCase() + nome.slice(1);
+  };
 
   const separaMesAno = (data: string) => {
     const [ano, mes] = data.split("T")[0].split("-");
     return { ano, mes };
   };
 
-  const fetchDataComprovantes = async (ano: string, mes: string) => {
+  const mesAnoAtual = () => {
+    const dataAtual = new Date();
+    const anoAtual = dataAtual.getFullYear().toString();
+    const mesAtual = (dataAtual.getMonth() + 1).toString().padStart(2, "0");
+    return { ano: anoAtual, mes: mesAtual };
+  };
+
+  const { ano: anoAtual, mes: mesAtual } = mesAnoAtual();
+
+  const fetchDataComprovantes = async (
+    ano: string | number = anoAtual,
+    mes: string | number = mesAtual,
+  ) => {
     setloadingComprovantes(true);
+
+    console.log("Fetch do contexto:");
+
     try {
       const response = await fetch(
         `/Routes/Comprovantes?acao=dados&ano=${ano}&mes=${mes}`,
       );
       const data = await response.json();
       setdadosBrutos(data.dados);
-      //const groupedData = _.groupBy(data.dados, "dataFormatada");
-      //setdadosComprovantes(groupedData);
+
+      //console.log("Dados recebidos:", data.dados);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     } finally {
@@ -93,29 +123,85 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
     return total;
   }, [dadosAgrupados]);
 
-  const apagarComprovante = async (id: number, dataT: string) => {
+  const apagarComprovante = async (
+    id: number,
+    dataT: string,
+    nomeArquivo: string,
+  ) => {
     // Pede confirmação antes de fazer qualquer coisa
     const confirmado = window.confirm(
-      "Tens a certeza de que queres apagar este comprovante?",
+      "Tem certeza de que quer apagar este comprovante?",
     );
 
-    if (!confirmado) return; // Se o utilizador cancelar, não faz nada
+    if (!confirmado) return;
 
-    const response = await fetch(
-      `/Routes/Comprovantes/DeletarComprovante?id=${id}`,
-      {
-        method: "DELETE",
-      },
-    );
+    try {
+      const [anoSpl, mesSpl] = dataT.split("-");
 
-    const data = await response.json();
-    if (response.ok) {
+      const caminhoArquivo = `uploads/${anoSpl}/${mesSpl}/${nomeArquivo}`;
+
+      const resLocal = await fetch("http://192.168.1.14:666/deletar-arquivo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ caminhoArquivo }),
+      });
+
+      if (!resLocal.ok) {
+        console.warn(
+          "Aviso: O arquivo local não foi encontrado ou já havia sido apagado.",
+        );
+      } else {
+        console.log("Arquivo físico local apagado com sucesso!");
+      }
+
+      const response = await fetch(
+        `/Routes/Comprovantes/DeletarComprovante?id=${id}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.erro || "Erro ao apagar no banco de dados.");
+      }
+
       console.log(data.message);
-      const dataTrabalhar = separaMesAno(dataT);
-      fetchDataComprovantes(dataTrabalhar.ano, dataTrabalhar.mes); // Atualiza a lista de comprovantes após a exclusão
-    } else {
-      console.error("Erro ao apagar:", data.erro);
+
+      // 1. Dispara a atualização do contexto em segundo plano
+      await fetchDataMesesAnos();
+
+      const { ano, mes } = separaMesAno(dataT);
+
+      // 2. Pega a lista atual e JÁ FILTRA removendo o mês que você acabou de apagar
+      const mesesAtualizados = (mesAno?.[ano] || []).filter(
+        (m) => m.num.toString() !== mes.toString(),
+      );
+
+      // 3. Pega o novo último mês disponível (que agora será o 9, já que o 10 foi filtrado)
+      const ultimoMesDisponivel =
+        mesesAtualizados.length > 0
+          ? mesesAtualizados[mesesAtualizados.length - 1].num
+          : null;
+
+      if (ultimoMesDisponivel) {
+        selecionarMes(ultimoMesDisponivel.toString());
+        await fetchDataComprovantes(ano, ultimoMesDisponivel);
+      } else {
+        console.log("O ano ficou sem meses cadastrados.");
+      }
+    } catch (error) {
+      console.error("Erro ao apagar:", error);
+      alert((error as Error).message || "Falha ao processar a exclusão.");
     }
+  };
+
+  const selecionarMes = (novoMes: string) => {
+    setMesSelecionado(novoMes);
+    // Se quiser colocar algo extra aqui no futuro (ex: log, validação, fetch), já fica centralizado
   };
 
   const valoresContext: ComprovantesContextType = {
@@ -129,6 +215,10 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
     apagarComprovante,
     separaMesAno,
     mesAno,
+    mesAnoAtual,
+    mesSelecionado,
+    selecionarMes,
+    nomeDoMes,
   };
 
   return (

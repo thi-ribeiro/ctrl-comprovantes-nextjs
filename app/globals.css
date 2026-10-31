@@ -19,6 +19,13 @@
   }
 }
 
+svg {
+  shape-rendering: geometricPrecision;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -47,12 +54,16 @@ body {
   }
 
   select {
-    width: 100px;
+    width: auto;
     text-align: center;
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #f9f9f9;
     cursor: pointer;
+  }
+
+  .listagem-ano-fix {
+    text-transform: none !important;
   }
 
   .listagem-mes-ano-item {
@@ -90,13 +101,6 @@ body {
   margin-bottom: 12px;
   overflow: hidden; /* Mantém tudo dentro do borderRadius */
   transition: all 0.5s ease-in-out; /* Transição suave para o hover */
-}
-
-.grupo-comprovantes:hover,
-.grupo-comprovantes:focus-within,
-.grupo-comprovantes:active {
-  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); */
-  /* border: 2px solid #000; */
 }
 
 .data-header {
@@ -178,6 +182,12 @@ body {
   gap: 10px;
   padding: 5px;
   align-items: center;
+  width: 100%;
+}
+
+.total-dia {
+  display: flex;
+  justify-content: end;
   width: 100%;
 }
 
@@ -265,4 +275,40 @@ body {
   .adicionar-comprovante:hover {
     box-shadow: 0 0px 10px rgba(0, 0, 0, 0); /* Aumenta o brilho do botão ao passar o mouse */
   }
+}
+
+.MesSelecionado-flutuante {
+  position: fixed;
+  top: 100px;
+  left: 20px;
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+  justify-content: center;
+
+  z-index: 999;
+
+  padding: 10px;
+
+  transition: all 500ms ease-in-out;
+  border: 1px solid #ccc;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 8px; /* Ou 50% se quiser ele redondinho */
+  font-weight: bold;
+  font-size: x-large;
+  box-shadow: 0 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+.MesSelecionado-flutuante {
+  /* normal: opaco */
+  background-color: rgba(255, 255, 255, 1);
+  transition: all 500ms ease-in-out;
+}
+
+.MesSelecionado-flutuante.transparente {
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: none;
+  opacity: 0.5; /* deixa o texto e a borda semi transparentes também */
 }

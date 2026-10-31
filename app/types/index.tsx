@@ -22,6 +22,7 @@ export interface Comprovante2 {
   usuarioComprovante: string;
   linkComprovante: string;
   horarioPostComprovante: string;
+  nomeArquivo: string;
   tipo: string;
   valorComprovante: number;
   cartaoComprovante: string;
