@@ -8,8 +8,8 @@ interface ComprovantesContextType {
   loadingComprovantes: boolean;
   loadingMesesAnos: boolean;
   dadosAgrupados: Record<string, Comprovante2[]>; // Aqui você pode definir o tipo correto para os dados agrupados
-  fetchDataComprovantes: (ano?: string, mes?: string) => Promise<void>;
-  fetchDataMesesAnos: () => Promise<void>;
+  fetchDataComprovantes: (ano?: string, mes?: string) => Promise<number | null>; // Função para buscar os comprovantes, retornando void ou null em caso de erro
+  fetchDataMesesAnos: () => Promise<EstruturaMesAno | null>;
   mesAno: EstruturaMesAno | null; // Aqui você pode definir o tipo correto para a estrutura de meses e anos
   totalDatas: number; // Aqui você pode definir o tipo correto para o total
   formatarMoeda: (valor: number) => string; // Função para formatar valores monetários
@@ -69,26 +69,28 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
   const fetchDataComprovantes = async (
     ano: string = anoAtual,
     mes: string = mesAtual,
-  ) => {
+  ): Promise<number | null> => {
     setloadingComprovantes(true);
 
     try {
       const response = await fetch(
         `/Routes/Comprovantes?acao=dados&ano=${ano}&mes=${mes}`,
       );
+      if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+
       const data = await response.json();
       setdadosBrutos(data.dados);
       setAnoMesCarregado({ ano, mes });
-
-      //console.log("Dados recebidos:", data.dados);
+      return data.dados.length;
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
+      return null; // null = deu erro, 0 = mês realmente vazio
     } finally {
       setloadingComprovantes(false);
     }
   };
 
-  const fetchDataMesesAnos = async () => {
+  const fetchDataMesesAnos = async (): Promise<EstruturaMesAno | null> => {
     try {
       setloadingMesesAnos(true);
       const response = await fetch("/Routes/Comprovantes?acao=listarAnos");
@@ -97,9 +99,10 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
       }
       const data = await response.json();
       setmesAno(data.estrutura);
-      //console.log("Dados recebidos:", data.estrutura);
+      return data.estrutura;
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
+      return null;
     } finally {
       setloadingMesesAnos(false);
     }
@@ -133,71 +136,45 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
     dataT: string,
     nomeArquivo: string,
   ) => {
-    // Pede confirmação antes de fazer qualquer coisa
     const confirmado = window.confirm(
       "Tem certeza de que quer apagar este comprovante?",
     );
-
     if (!confirmado) return;
 
     try {
-      const [anoSpl, mesSpl] = dataT.split("-");
+      const { ano, mes } = separaMesAno(dataT);
 
-      const caminhoArquivo = `uploads/${anoSpl}/${mesSpl}/${nomeArquivo}`;
-
-      const resLocal = await fetch("http://192.168.1.14:666/deletar-arquivo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ caminhoArquivo }),
-      });
-
-      if (!resLocal.ok) {
-        console.warn(
-          "Aviso: O arquivo local não foi encontrado ou já havia sido apagado.",
-        );
-      } else {
-        console.log("Arquivo físico local apagado com sucesso!");
-      }
-
+      // 1. apaga no banco primeiro (se falhar, nada mais é apagado)
       const response = await fetch(
         `/Routes/Comprovantes/DeletarComprovante?id=${id}`,
-        {
-          method: "DELETE",
-        },
+        { method: "DELETE" },
       );
-
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.erro || "Erro ao apagar no banco de dados.");
       }
 
-      console.log(data.message);
-
-      // 1. Dispara a atualização do contexto em segundo plano
-      await fetchDataMesesAnos();
-
-      const { ano, mes } = separaMesAno(dataT);
-
-      // 2. Pega a lista atual e JÁ FILTRA removendo o mês que você acabou de apagar
-      const mesesAtualizados = (mesAno?.[ano] || []).filter(
-        (m) => m.num.toString() !== mes.toString(),
-      );
-
-      // 3. Pega o novo último mês disponível (que agora será o 9, já que o 10 foi filtrado)
-      const ultimoMesDisponivel =
-        mesesAtualizados.length > 0
-          ? mesesAtualizados[mesesAtualizados.length - 1].num
-          : null;
-
-      if (ultimoMesDisponivel) {
-        selecionarAnoMes(ano, ultimoMesDisponivel.toString());
-        await fetchDataComprovantes(ano, ultimoMesDisponivel.toString());
-      } else {
-        console.log("O ano ficou sem meses cadastrados.");
+      // 2. depois apaga o arquivo local (falha aqui não é crítica)
+      try {
+        const caminhoArquivo = `uploads/${ano}/${mes}/${nomeArquivo}`;
+        const resLocal = await fetch(
+          "http://192.168.1.14:666/deletar-arquivo",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ caminhoArquivo }),
+          },
+        );
+        if (!resLocal.ok) console.warn("Arquivo local não encontrado.");
+      } catch (err) {
+        console.warn("Servidor local indisponível:", err);
       }
+
+      const mesesAtualizados = await fetchDataMesesAnos();
+      const ultimoMes = _.last(mesesAtualizados?.[ano] ?? []);
+
+      selecionarAnoMes(ano, ultimoMes?.num.toString() ?? mes);
+      await fetchDataComprovantes(ano, ultimoMes?.num.toString() ?? mes);
     } catch (error) {
       console.error("Erro ao apagar:", error);
       alert((error as Error).message || "Falha ao processar a exclusão.");
@@ -206,7 +183,6 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
 
   const selecionarAnoMes = (novoAno: string, novoMes: string) => {
     setanoMesSelecionado({ ano: novoAno, mes: novoMes });
-    // Se quiser colocar algo extra aqui no futuro (ex: log, validação, fetch), já fica centralizado
   };
 
   const valoresContext: ComprovantesContextType = {
@@ -224,7 +200,7 @@ export function ComprovantesProvider({ children }: ComprovantesProviderProps) {
     anoMesSelecionado,
     selecionarAnoMes,
     nomeDoMes,
-    anoMesCarregado
+    anoMesCarregado,
   };
 
   return (
