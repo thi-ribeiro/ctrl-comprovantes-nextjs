@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import ModalDrawer from "../ModalDrawer/ModalDrawer";
 import { useComprovantes } from "@/app/Contexto/ComprovanteContext";
 import { Comprovante2 } from "../../types";
-import { uploadFiles } from "@/app/utils/uploadthing";
 
 interface EditarComprovanteProps {
   itemSelecionado: Comprovante2 | null;
@@ -89,6 +88,7 @@ export default function EditarComprovante({
     <ModalDrawer
       isOpen={isOpen}
       onClose={handleFecharAnimado}
+      loading={isSubmitting}
       titulo="Editar Comprovante"
     >
       <form
@@ -169,7 +169,7 @@ export default function EditarComprovante({
           )}
           required
         />
-        
+
         <div className="edit-link-comprovante">
           <h1>Link atual: </h1>
           <a

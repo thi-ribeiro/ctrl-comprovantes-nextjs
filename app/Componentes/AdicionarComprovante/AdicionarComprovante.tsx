@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, SubmitEvent } from "react";
 import { HiOutlinePlus } from "react-icons/hi";
 import ModalDrawer from "../ModalDrawer/ModalDrawer";
 import { useComprovantes } from "@/app/Contexto/ComprovanteContext";
@@ -15,13 +15,17 @@ export default function AdicionarComprovante({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingText, setLoadingText] = useState("Adicionar");
 
-  const { fetchDataComprovantes, fetchDataMesesAnos, selecionarAnoMes } =
-    useComprovantes();
+  const {
+    fetchDataComprovantes,
+    fetchDataMesesAnos,
+    selecionarAnoMes,
+    anoMesCarregado,
+  } = useComprovantes();
 
-  const handleAdicionarSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAdicionarSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     const formElement = e.currentTarget;
-    const formData = new FormData(formElement);
+    const formData = new FormData(formElement as HTMLFormElement);
 
     const dataComprovanteStr = formData.get("dataComprovante") as string;
     const usuarioComprovante = formData.get("usuarioComprovante") as string;
@@ -115,7 +119,7 @@ export default function AdicionarComprovante({
         await fetchDataComprovantes(ano, mes);
       }
 
-      formElement.reset();
+      (formElement as HTMLFormElement).reset();
       setIsOpen(false);
     } catch (error) {
       console.error("Erro no processo de salvamento:", error);
@@ -126,7 +130,7 @@ export default function AdicionarComprovante({
     }
   };
 
-  if (!loadingEnd) {
+  if (!loadingEnd || !anoMesCarregado.ano || !anoMesCarregado.mes) {
     return null;
   }
 
@@ -139,6 +143,7 @@ export default function AdicionarComprovante({
       <ModalDrawer
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
+        loading={isSubmitting}
         titulo="Adicionar Comprovante"
       >
         <form onSubmit={handleAdicionarSubmit}>

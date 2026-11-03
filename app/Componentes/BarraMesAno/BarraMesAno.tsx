@@ -11,12 +11,14 @@ const BarraMesAno = () => {
     anoMesSelecionado,
   } = useComprovantes();
 
-  const [anoEscolha, setAnoEscolha] = useState<string>("");
+  const [anoEscolha, setAnoEscolha] = useState<string>(anoMesSelecionado.ano);
 
   useEffect(() => {
     fetchDataMesesAnos();
+
+    console.log("anoMesSelecionado:", anoMesSelecionado);
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [anoMesSelecionado.ano]);
 
   const mesesDoAnoAtual =
     anoEscolha && mesAno && mesAno[anoEscolha] ? mesAno[anoEscolha] : [];
@@ -69,13 +71,7 @@ const BarraMesAno = () => {
           ))}
         </select>
 
-        {/* Repassa apenas o array de meses correspondente ao ano escolhido */}
         {anoEscolha && mesAno[anoEscolha] && (
-          // <SeletorMes
-          //   key={anoEscolha}
-          //   mesesDoAno={mesAno[anoEscolha]}
-          //   onBuscar={handleBuscarClick}
-          // />
           <>
             <div className="listagem-mes-ano-item">
               <select
